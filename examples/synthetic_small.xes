@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log xes.version="1.0" xes.features="nested-attributes" xmlns="http://www.xes-standard.org/">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext"/>
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext"/>
+  <classifier name="Activity" keys="concept:name"/>
+  
+  <!-- Case 1: High amount path (amount > 100) -->
+  <trace>
+    <string key="concept:name" value="case1"/>
+    <event>
+      <string key="concept:name" value="Submit_Request"/>
+      <date key="time:timestamp" value="2025-01-01T10:00:00Z"/>
+      <int key="amount" value="150"/>
+      <string key="category" value="urgent"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Manager_Approval"/>
+      <date key="time:timestamp" value="2025-01-01T10:30:00Z"/>
+      <int key="amount" value="150"/>
+      <string key="category" value="urgent"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Process"/>
+      <date key="time:timestamp" value="2025-01-01T11:00:00Z"/>
+      <int key="amount" value="150"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Complete"/>
+      <date key="time:timestamp" value="2025-01-01T12:00:00Z"/>
+      <int key="amount" value="150"/>
+    </event>
+  </trace>
+  
+  <!-- Case 2: Low amount path (amount <= 100) -->
+  <trace>
+    <string key="concept:name" value="case2"/>
+    <event>
+      <string key="concept:name" value="Submit_Request"/>
+      <date key="time:timestamp" value="2025-01-02T09:00:00Z"/>
+      <int key="amount" value="50"/>
+      <string key="category" value="normal"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Auto_Approve"/>
+      <date key="time:timestamp" value="2025-01-02T09:05:00Z"/>
+      <int key="amount" value="50"/>
+      <string key="category" value="normal"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Process"/>
+      <date key="time:timestamp" value="2025-01-02T09:30:00Z"/>
+      <int key="amount" value="50"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Complete"/>
+      <date key="time:timestamp" value="2025-01-02T10:00:00Z"/>
+      <int key="amount" value="50"/>
+    </event>
+  </trace>
+  
+  <!-- Case 3: High amount path -->
+  <trace>
+    <string key="concept:name" value="case3"/>
+    <event>
+      <string key="concept:name" value="Submit_Request"/>
+      <date key="time:timestamp" value="2025-01-03T14:00:00Z"/>
+      <int key="amount" value="250"/>
+      <string key="category" value="urgent"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Manager_Approval"/>
+      <date key="time:timestamp" value="2025-01-03T14:45:00Z"/>
+      <int key="amount" value="250"/>
+      <string key="category" value="urgent"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Process"/>
+      <date key="time:timestamp" value="2025-01-03T15:30:00Z"/>
+      <int key="amount" value="250"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Complete"/>
+      <date key="time:timestamp" value="2025-01-03T16:00:00Z"/>
+      <int key="amount" value="250"/>
+    </event>
+  </trace>
+  
+  <!-- Case 4: Low amount path -->
+  <trace>
+    <string key="concept:name" value="case4"/>
+    <event>
+      <string key="concept:name" value="Submit_Request"/>
+      <date key="time:timestamp" value="2025-01-04T11:00:00Z"/>
+      <int key="amount" value="75"/>
+      <string key="category" value="normal"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Auto_Approve"/>
+      <date key="time:timestamp" value="2025-01-04T11:05:00Z"/>
+      <int key="amount" value="75"/>
+      <string key="category" value="normal"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Process"/>
+      <date key="time:timestamp" value="2025-01-04T11:20:00Z"/>
+      <int key="amount" value="75"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Complete"/>
+      <date key="time:timestamp" value="2025-01-04T12:00:00Z"/>
+      <int key="amount" value="75"/>
+    </event>
+  </trace>
+  
+  <!-- Case 5: High amount path -->
+  <trace>
+    <string key="concept:name" value="case5"/>
+    <event>
+      <string key="concept:name" value="Submit_Request"/>
+      <date key="time:timestamp" value="2025-01-05T08:00:00Z"/>
+      <int key="amount" value="180"/>
+      <string key="category" value="urgent"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Manager_Approval"/>
+      <date key="time:timestamp" value="2025-01-05T08:40:00Z"/>
+      <int key="amount" value="180"/>
+      <string key="category" value="urgent"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Process"/>
+      <date key="time:timestamp" value="2025-01-05T09:15:00Z"/>
+      <int key="amount" value="180"/>
+    </event>
+    <event>
+      <string key="concept:name" value="Complete"/>
+      <date key="time:timestamp" value="2025-01-05T10:00:00Z"/>
+      <int key="amount" value="180"/>
+    </event>
+  </trace>
+</log>

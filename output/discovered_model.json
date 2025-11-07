@@ -1,0 +1,345 @@
+{
+  "name": "Discovered DPN from synthetic_small.xes",
+  "description": "Data Petri Net discovered using EFSM learning from event log",
+  "places": [
+    {
+      "id": "P_s5",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s5",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s6",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s6",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s1",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s1",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s0",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s0",
+      "tokens": 1,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s7",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s7",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s3",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s3",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s4",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s4",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_s2",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "s2",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    }
+  ],
+  "transitions": [
+    {
+      "id": "T_t3_Process",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Process",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_t1_Manager_Approval",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Manager_Approval",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "amount > 75",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_t6_Complete",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Complete",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_t0_Submit_Request",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Submit_Request",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_t2_Auto_Approve",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Auto_Approve",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "amount <= 75",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_t4_Complete",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Complete",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_t5_Process",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Process",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    }
+  ],
+  "arcs": [
+    {
+      "id": "A1",
+      "source": "T_t1_Manager_Approval",
+      "target": "P_s2",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A2",
+      "source": "T_t0_Submit_Request",
+      "target": "P_s1",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A3",
+      "source": "P_s1",
+      "target": "T_t1_Manager_Approval",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A4",
+      "source": "P_s1",
+      "target": "T_t2_Auto_Approve",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A5",
+      "source": "P_s2",
+      "target": "T_t3_Process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A6",
+      "source": "T_t3_Process",
+      "target": "P_s3",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A7",
+      "source": "P_s3",
+      "target": "T_t4_Complete",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A8",
+      "source": "P_s6",
+      "target": "T_t6_Complete",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A9",
+      "source": "P_s0",
+      "target": "T_t0_Submit_Request",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A10",
+      "source": "T_t2_Auto_Approve",
+      "target": "P_s5",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A11",
+      "source": "T_t4_Complete",
+      "target": "P_s4",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A12",
+      "source": "P_s5",
+      "target": "T_t5_Process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A13",
+      "source": "T_t5_Process",
+      "target": "P_s6",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A14",
+      "source": "T_t6_Complete",
+      "target": "P_s7",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    }
+  ],
+  "dataVariables": [
+    {
+      "id": "var_amount",
+      "name": "amount",
+      "type": "number",
+      "currentValue": 0,
+      "description": "Variable amount of type int"
+    },
+    {
+      "id": "var_category",
+      "name": "category",
+      "type": "string",
+      "currentValue": "",
+      "description": "Variable category of type cat"
+    }
+  ]
+}
