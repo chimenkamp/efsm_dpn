@@ -13,14 +13,14 @@ from efsm_dpn.integration.pm4py_adapter import export_dpn_to_json
 def main():
     # Path to the example XES file
     log_path = Path(__file__).parent / "examples" / "synthetic_small.xes"
-    
+    log_path = "/Users/christianimenkamp/Documents/Data-Repository/Community/sepsis/Sepsis Cases - Event Log.xes"
     print(f"Loading event log: {log_path}")
     
     # Learn EFSM from the event log
     print("Discovering EFSM from event log...")
     efsm = learn_efsm_from_log(
         str(log_path),
-        divergence_threshold=0.3,
+        divergence_threshold=0.7,
         use_inductive_miner=False
     )
     

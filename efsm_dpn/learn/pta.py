@@ -60,7 +60,8 @@ class PTANode:
 
         stats: Dict[str, Any] = {"count": len(values)}
 
-        if all(isinstance(v, (int, float)) for v in values):
+        # Check if numeric (excluding booleans, since bool is subclass of int)
+        if all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in values):
             numeric_vals = np.array(values)
             stats["mean"] = float(np.mean(numeric_vals))
             stats["std"] = float(np.std(numeric_vals))

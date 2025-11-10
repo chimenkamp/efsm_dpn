@@ -11,6 +11,18 @@ from typing import Dict, List, Optional, Set, Tuple
 from efsm_dpn.learn.pta import PTA, PTANode
 from scipy.spatial.distance import jensenshannon
 import numpy as np
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Changed from DEBUG to INFO for faster execution
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('state_merger_debug.log', mode='w'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 def compute_attribute_divergence(
@@ -30,6 +42,7 @@ def compute_attribute_divergence(
     common_labels = labels1 & labels2
 
     if not common_labels:
+        logger.debug(f"      No common labels for attribute '{attr_name}' (node1: {labels1}, node2: {labels2})")
         return 1.0
 
     divergences = []
@@ -90,16 +103,15 @@ def are_states_compatible(
     :return : True if compatible.
     :return: Compatibility boolean.
     """
-    labels1 = set(node1.children.keys())
-    labels2 = set(node2.children.keys())
-
-    if labels1 != labels2:
-        return False
-
+    # Check attribute compatibility for common behaviors
+    # compute_attribute_divergence already considers only common labels
     for attr_name in attribute_names:
         div = compute_attribute_divergence(node1, node2, attr_name)
         if div > divergence_threshold:
+            logger.debug(f"    Incompatible on attribute '{attr_name}': divergence={div:.3f} > {divergence_threshold}")
             return False
+        else:
+            logger.debug(f"    Compatible on attribute '{attr_name}': divergence={div:.3f}")
 
     return True
 
@@ -148,38 +160,99 @@ def blue_fringe_merge(
     :return : Final mapping from PTA node IDs to merged state IDs.
     :return: Node ID to state ID mapping.
     """
+    logger.info(f"Starting blue_fringe_merge with {len(pta.nodes)} PTA nodes")
+    logger.info(f"Attributes to consider: {attribute_names}")
+    logger.info(f"Divergence threshold: {divergence_threshold}")
+    
     red: Set[int] = {pta.root.node_id}
     blue: Set[int] = set()
     mapping: Dict[int, int] = {n.node_id: n.node_id for n in pta.nodes}
 
     for child in pta.root.children.values():
         blue.add(child.node_id)
+    
+    logger.info(f"Initial: RED={red}, BLUE size={len(blue)}")
 
-    changed = True
-    while changed and blue:
-        changed = False
+    iteration = 0
+    total_merges = 0
+    
+    while blue:
+        iteration += 1
         blue_node_id = next(iter(blue))
         blue_node = next(n for n in pta.nodes if n.node_id == blue_node_id)
+        
+        logger.debug(f"\n--- Iteration {iteration} ---")
+        logger.debug(f"Considering blue node {blue_node_id}")
+        logger.debug(f"Blue node has children with labels: {list(blue_node.children.keys())}")
 
         merged = False
+        compatibility_checks = 0
+        
         for red_node_id in list(red):
             red_node = next(n for n in pta.nodes if n.node_id == red_node_id)
+            compatibility_checks += 1
+            
+            logger.debug(f"  Checking compatibility with red node {red_node_id}")
+            logger.debug(f"  Red node has children with labels: {list(red_node.children.keys())}")
+            
             if are_states_compatible(
                 red_node, blue_node, attribute_names, divergence_threshold
             ):
+                logger.info(f"  ✓ COMPATIBLE! Merging blue {blue_node_id} into red {red_node_id}")
+                
+                # Identify which children of blue_node were NEW (not matched with red_node children)
+                new_children_from_merge = set()
+                for label, child in blue_node.children.items():
+                    if label not in red_node.children:
+                        # This child from blue will be added to red as a new branch
+                        new_children_from_merge.add(child.node_id)
+                
                 merge_mapping = merge_states(pta, red_node_id, blue_node_id)
+                logger.debug(f"  Merge mapping: {merge_mapping}")
+                
                 for old_id, new_id in merge_mapping.items():
                     mapping[old_id] = new_id
                 blue.discard(blue_node_id)
+                
+                # Add the NEW children (that weren't recursively merged) to BLUE
+                for child_id in new_children_from_merge:
+                    if child_id not in red and child_id not in blue:
+                        blue.add(child_id)
+                        logger.debug(f"  Added new branch child {child_id} to BLUE")
+                
                 merged = True
-                changed = True
+                total_merges += 1
                 break
+            else:
+                logger.debug(f"  ✗ Not compatible with red {red_node_id}")
 
         if not merged:
+            logger.debug(f"Blue node {blue_node_id} not compatible with any red node (checked {compatibility_checks} nodes)")
+            logger.debug(f"Promoting blue {blue_node_id} to RED")
             blue.discard(blue_node_id)
             red.add(blue_node_id)
             for child in blue_node.children.values():
                 if child.node_id not in red and child.node_id not in blue:
                     blue.add(child.node_id)
+                    logger.debug(f"  Added child {child.node_id} to BLUE")
+        
+        if iteration % 100 == 0:
+            logger.info(f"Progress: iteration {iteration}, RED size={len(red)}, BLUE size={len(blue)}, total merges={total_merges}")
+
+    logger.info(f"\nMerging complete after {iteration} iterations")
+    logger.info(f"Total merges performed: {total_merges}")
+    logger.info(f"Final RED size: {len(red)}")
+    logger.info(f"Nodes before mapping cleanup: {len(set(mapping.values()))}")
+    
+    # Apply transitive closure: ensure all mappings point to final representative
+    for node_id in list(mapping.keys()):
+        representative = mapping[node_id]
+        while representative in mapping and mapping[representative] != representative:
+            representative = mapping[representative]
+        mapping[node_id] = representative
+
+    unique_states = len(set(mapping.values()))
+    logger.info(f"Unique states after transitive closure: {unique_states}")
+    logger.info(f"Reduction: {len(pta.nodes)} -> {unique_states} ({100*(1-unique_states/len(pta.nodes)):.1f}% reduction)")
 
     return mapping
