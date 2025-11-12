@@ -174,7 +174,7 @@ def export_dpn_to_json(dpn: DPN, filepath: str, name: str = "Discovered DPN", de
         transitions.append({
             "id": trans_id,
             "position": {"x": 0, "y": 0},
-            "label": trans.label if trans.label else trans.name,
+            "label": trans.label,  # Keep None for silent transitions
             "width": 20,
             "height": 50,
             "isEnabled": False,

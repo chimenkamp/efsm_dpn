@@ -1,0 +1,290 @@
+{
+  "name": "Test DPN",
+  "description": "Test model",
+  "places": [
+    {
+      "id": "P_start",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "start",
+      "tokens": 1,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_end",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "end",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    },
+    {
+      "id": "P_process",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "process",
+      "tokens": 0,
+      "capacity": null,
+      "radius": 20
+    }
+  ],
+  "transitions": [
+    {
+      "id": "T_Submit_Request",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Submit_Request",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_start_process",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": null,
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "",
+      "postcondition": ""
+    },
+    {
+      "id": "T_Auto_Approve",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Auto_Approve",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "(amount <= 75)",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_Manager_Approval",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Manager_Approval",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "(amount >= 112)",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_Complete",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Complete",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_Process",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": "Process",
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "true",
+      "postcondition": "ε"
+    },
+    {
+      "id": "T_end_process",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "label": null,
+      "width": 20,
+      "height": 50,
+      "isEnabled": false,
+      "priority": 1,
+      "delay": 0,
+      "precondition": "",
+      "postcondition": ""
+    }
+  ],
+  "arcs": [
+    {
+      "id": "A1",
+      "source": "P_start",
+      "target": "T_start_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A2",
+      "source": "T_start_process",
+      "target": "P_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A3",
+      "source": "P_process",
+      "target": "T_Manager_Approval",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A4",
+      "source": "T_Submit_Request",
+      "target": "P_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A5",
+      "source": "P_process",
+      "target": "T_end_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A6",
+      "source": "T_end_process",
+      "target": "P_end",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A7",
+      "source": "T_Auto_Approve",
+      "target": "P_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A8",
+      "source": "P_process",
+      "target": "T_Complete",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A9",
+      "source": "P_process",
+      "target": "T_Auto_Approve",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A10",
+      "source": "T_Complete",
+      "target": "P_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A11",
+      "source": "T_Manager_Approval",
+      "target": "P_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A12",
+      "source": "P_process",
+      "target": "T_Process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A13",
+      "source": "T_Process",
+      "target": "P_process",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    },
+    {
+      "id": "A14",
+      "source": "P_process",
+      "target": "T_Submit_Request",
+      "weight": 1,
+      "type": "regular",
+      "points": [],
+      "label": "1"
+    }
+  ],
+  "dataVariables": [
+    {
+      "id": "var_amount",
+      "name": "amount",
+      "type": "number",
+      "currentValue": 0,
+      "description": "Variable amount of type int"
+    },
+    {
+      "id": "var_category",
+      "name": "category",
+      "type": "string",
+      "currentValue": "",
+      "description": "Variable category of type cat"
+    }
+  ]
+}

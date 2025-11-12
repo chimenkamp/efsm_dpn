@@ -13,7 +13,7 @@ import pm4py
 from collections import defaultdict
 
 
-def read_log(filepath: str) -> pd.DataFrame:
+def read_log(filepath: str, log_sample_ratio: float = 0.0) -> pd.DataFrame:
     """
     Read event log from XES or CSV file.
 
@@ -40,6 +40,16 @@ def read_log(filepath: str) -> pd.DataFrame:
         df = pd.read_csv(filepath)
         if "timestamp" in df.columns:
             df["timestamp"] = pd.to_datetime(df["timestamp"])
+        
+
+        # Sample the log but keep cases intact
+        if 0.0 < log_sample_ratio < 1.0:
+            case_ids = df["case_id"].unique()
+            sampled_case_ids = pd.Series(case_ids).sample(
+                frac=log_sample_ratio
+            )
+            df = df[df["case_id"].isin(sampled_case_ids)]
+
         return df
     else:
         raise ValueError(f"Unsupported file format: {filepath}")

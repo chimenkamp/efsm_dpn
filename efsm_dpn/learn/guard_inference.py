@@ -10,8 +10,11 @@ Learns predicates from positive and negative examples of edge usage.
 from typing import Any, Dict, List, Optional, Set, Tuple
 import z3
 import numpy as np
+import logging
 from efsm_dpn.models.efsm import Guard
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 
 def extract_edge_examples(
@@ -102,24 +105,31 @@ def generate_atomic_predicates(
             if len(unique_vals) <= 10:
                 thresholds.extend(unique_vals)
 
+            # Limit to top 20 most relevant thresholds to avoid explosion
             unique_thresholds = sorted(set(thresholds))
+            if len(unique_thresholds) > 20:
+                # Sample evenly across the range
+                indices = np.linspace(0, len(unique_thresholds) - 1, 20, dtype=int)
+                unique_thresholds = [unique_thresholds[i] for i in indices]
+            
             for threshold in unique_thresholds:
                 if attr_type == "int":
+                    # Only add <= and >= to reduce predicate count
                     predicates.append(z3_var <= int(threshold))
                     predicates.append(z3_var >= int(threshold))
-                    predicates.append(z3_var == int(threshold))
-                    predicates.append(z3_var < int(threshold))
-                    predicates.append(z3_var > int(threshold))
                 else:
                     predicates.append(z3_var <= threshold)
                     predicates.append(z3_var >= threshold)
-                    predicates.append(z3_var < threshold)
-                    predicates.append(z3_var > threshold)
 
     elif attr_type == "cat":
         if "values" in domain_info:
             z3_var = z3.String(attr_name)
-            for value in domain_info["values"]:
+            # Limit categorical predicates to top 10 most common values
+            values = domain_info["values"]
+            if len(values) > 10:
+                # Only use first 10 values (assumes they're ordered by frequency)
+                values = values[:10]
+            for value in values:
                 predicates.append(z3_var == z3.StringVal(str(value)))
 
     return predicates
@@ -142,9 +152,11 @@ def synthesize_guard_z3(
     :return: Learned guard predicate.
     """
     if not positive_examples:
+        logger.debug("No positive examples, returning 'true' guard")
         return Guard(expression=None, serialized="true")
 
     if not negative_examples:
+        logger.debug("No negative examples, returning 'true' guard")
         return Guard(expression=None, serialized="true")
 
     all_attrs = set()
@@ -172,8 +184,11 @@ def synthesize_guard_z3(
     all_predicates = numerical_predicates + categorical_predicates
 
     if not all_predicates:
+        logger.debug("No predicates generated, returning 'true' guard")
         return Guard(expression=None, serialized="true")
 
+    logger.debug(f"Generated {len(all_predicates)} predicates ({len(numerical_predicates)} numerical, {len(categorical_predicates)} categorical)")
+    
     for num_conjuncts in range(1, min(max_conjuncts + 1, len(all_predicates) + 1)):
         for i in range(len(all_predicates)):
             if num_conjuncts == 1:
@@ -185,8 +200,10 @@ def synthesize_guard_z3(
                 candidate = z3.And(*conjuncts)
 
             if validate_guard(candidate, positive_examples, negative_examples):
+                logger.debug(f"Found valid guard with {num_conjuncts} conjunct(s): {str(candidate)[:100]}")
                 return Guard(expression=candidate, serialized=str(candidate))
 
+    logger.debug("No valid guard found, returning 'true' guard")
     return Guard(expression=None, serialized="true")
 
 
@@ -204,9 +221,15 @@ def validate_guard(
     :return : True if guard correctly classifies examples.
     :return: Validation result.
     """
+    # Sample examples if there are too many to speed up validation
+    pos_sample = positive_examples if len(positive_examples) <= 50 else positive_examples[:50]
+    neg_sample = negative_examples if len(negative_examples) <= 50 else negative_examples[:50]
+    
     solver = z3.Solver()
+    # Set timeout to avoid hanging on complex constraints
+    solver.set("timeout", 5000)  # 5 second timeout
 
-    for ex in positive_examples:
+    for ex in pos_sample:
         solver.push()
         substituted = guard_expr
         for attr, value in ex.items():
@@ -221,12 +244,13 @@ def validate_guard(
                 substituted = z3.substitute(substituted, (z3_var, z3.StringVal(value)))
 
         solver.add(substituted)
-        if solver.check() != z3.sat:
+        result = solver.check()
+        if result != z3.sat:
             solver.pop()
             return False
         solver.pop()
 
-    for ex in negative_examples:
+    for ex in neg_sample:
         solver.push()
         substituted = guard_expr
         for attr, value in ex.items():
@@ -241,7 +265,8 @@ def validate_guard(
                 substituted = z3.substitute(substituted, (z3_var, z3.StringVal(value)))
 
         solver.add(substituted)
-        if solver.check() == z3.sat:
+        result = solver.check()
+        if result == z3.sat:
             solver.pop()
             return False
         solver.pop()

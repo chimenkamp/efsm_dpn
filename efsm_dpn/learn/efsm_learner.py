@@ -8,6 +8,8 @@ Main pipeline for learning EFSMs from event logs.
 """
 
 from typing import Any, Dict, List, Optional, Tuple
+import logging
+import time
 from efsm_dpn.logs.io import (
     read_log,
     extract_traces,
@@ -20,11 +22,14 @@ from efsm_dpn.learn.guard_inference import synthesize_guard_z3, infer_read_write
 from efsm_dpn.models.efsm import EFSM, Variable, Transition, Guard, Update
 from collections import defaultdict
 
+logger = logging.getLogger(__name__)
+
 
 def learn_efsm_from_log(
     log_path: str,
     divergence_threshold: float = 0.3,
     use_inductive_miner: bool = False,
+    log_sample_ratio: float = 0.5,
 ) -> EFSM:
     """
     Learn an EFSM from an event log.
@@ -35,7 +40,7 @@ def learn_efsm_from_log(
     :return : Learned EFSM.
     :return: Discovered EFSM model.
     """
-    df = read_log(log_path)
+    df = read_log(log_path, log_sample_ratio=log_sample_ratio)
     traces = extract_traces(df)
     domains = infer_attribute_domains(df)
     propagation = detect_variable_propagation(traces)
@@ -79,6 +84,7 @@ def learn_efsm_from_pta(
     transitions: List[Transition] = []
     edge_map: Dict[Tuple[int, str, int], List[Dict[str, Any]]] = defaultdict(list)
 
+    logger.info("Building edge map from PTA nodes...")
     for node in pta.nodes:
         mapped_source = state_mapping.get(node.node_id, node.node_id)
         for label, child in node.children.items():
@@ -86,16 +92,35 @@ def learn_efsm_from_pta(
             samples = node.edge_samples.get(label, [])
             edge_map[(mapped_source, label, mapped_target)].extend(samples)
 
-    for (source_id, label, target_id), samples in edge_map.items():
+    logger.info(f"Edge map built: {len(edge_map)} unique edges")
+    logger.info("Synthesizing guards for transitions...")
+    
+    total_edges = len(edge_map)
+    start_time = time.time()
+    
+    for idx, ((source_id, label, target_id), samples) in enumerate(edge_map.items(), 1):
+        if idx % 10 == 0 or idx == 1:
+            elapsed = time.time() - start_time
+            rate = idx / elapsed if elapsed > 0 else 0
+            eta = (total_edges - idx) / rate if rate > 0 else 0
+            logger.info(f"Processing transition {idx}/{total_edges}: s{source_id} --[{label}]--> s{target_id} "
+                       f"({rate:.1f} trans/sec, ETA: {eta:.1f}s)")
+        
         source_state = f"s{source_id}"
         target_state = f"s{target_id}"
 
         positive_examples = samples
         # Collect negative examples: traces from same source state with different labels
+        # Limit to max 100 negative examples per transition to avoid Z3 performance issues
         negative_examples: List[Dict[str, Any]] = []
         for (other_source, other_label, other_target), other_samples in edge_map.items():
             if other_source == source_id and other_label != label:
                 negative_examples.extend(other_samples)
+                if len(negative_examples) >= 100:
+                    break
+        
+        if len(negative_examples) > 100:
+            negative_examples = negative_examples[:100]
 
         guard = synthesize_guard_z3(
             positive_examples, negative_examples, attribute_domains, max_conjuncts=2
@@ -117,10 +142,13 @@ def learn_efsm_from_pta(
         )
         transitions.append(transition)
 
+    logger.info(f"Guard synthesis complete: {len(transitions)} transitions created")
+    
     efsm = EFSM(
         states=states, initial=initial, variables=variables, transitions=transitions
     )
 
+    logger.info(f"EFSM created with {len(states)} states and {len(transitions)} transitions")
     return efsm
 
 

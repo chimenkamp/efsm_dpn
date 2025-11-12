@@ -131,7 +131,7 @@ def merge_states(pta: PTA, node1_id: int, node2_id: int) -> Dict[int, int]:
     node1 = next(n for n in pta.nodes if n.node_id == node1_id)
     node2 = next(n for n in pta.nodes if n.node_id == node2_id)
 
-    for label, child2 in node2.children.items():
+    for label, child2 in list(node2.children.items()):
         if label in node1.children:
             child1 = node1.children[label]
             sub_mapping = merge_states(pta, child1.node_id, child2.node_id)
@@ -139,7 +139,7 @@ def merge_states(pta: PTA, node1_id: int, node2_id: int) -> Dict[int, int]:
         else:
             node1.children[label] = child2
 
-    for label, samples in node2.edge_samples.items():
+    for label, samples in list(node2.edge_samples.items()):
         node1.edge_samples[label].extend(samples)
 
     if node2.accepting:
